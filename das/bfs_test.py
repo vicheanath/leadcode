@@ -40,6 +40,5 @@ class TestBFS(unittest.TestCase):
         self.assertEqual(self.bfs.get_level('F'), 2)
 
 
-
 if __name__ == '__main__':
     unittest.main()
