@@ -20,7 +20,7 @@ public class ValidAnagram {
 
         for (int i = 0; i < s.length(); i++){
             maps.put(s.charAt(i),maps.getOrDefault(s.charAt(i),0)+1);
-            mapt.put(t.charAt(i),mapt.getOrDefault(t.charAt(i),0)+1);
+            mapt.put(t.charAt(i),mapt.getOrDcefault(t.charAt(i),0)+1);
         }
 
         for (Map.Entry<Character,Integer> entry : maps.entrySet()){
