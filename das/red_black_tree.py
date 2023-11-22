@@ -1,86 +1,181 @@
-# red black tree
+RED = 1
+BLACK = 0
 
-def red_black_tree_insert(T, z):
-    y = T.nil
-    x = T.root
-    while x != T.nil:
-        y = x
-        if z.key < x.key:
-            x = x.left
-        else:
-            x = x.right
-    z.p = y
-    if y == T.nil:
-        T.root = z
-    elif z.key < y.key:
-        y.left = z
-    else:
-        y.right = z
-    z.left = T.nil
-    z.right = T.nil
-    z.color = 'red'
-    red_black_tree_insert_fixup(T, z)
-    
-def red_black_tree_insert_fixup(T, z):
-    while z.p.color == 'red':
-        if z.p == z.p.p.left:
-            y = z.p.p.right
-            if y.color == 'red':
-                z.p.color = 'black'
-                y.color = 'black'
-                z.p.p.color = 'red'
-                z = z.p.p
+
+class Node:
+    def __init__(self, key):
+        self.key = key
+        self.left = None
+        self.right = None
+        self.color = RED
+        self.size = 1
+
+    def insert(self, key):
+        if key < self.key:
+            if self.left is None:
+                self.left = Node(key)
             else:
-                if z == z.p.right:
-                    z = z.p
-                    left_rotate(T, z)
-                z.p.color = 'black'
-                z.p.p.color = 'red'
-                right_rotate(T, z.p.p)
-        else:
-            y = z.p.p.left
-            if y.color == 'red':
-                z.p.color = 'black'
-                y.color = 'black'
-                z.p.p.color = 'red'
-                z = z.p.p
+                self.left = self.left.insert(key)
+        elif key > self.key:
+            if self.right is None:
+                self.right = Node(key)
             else:
-                if z == z.p.left:
-                    z = z.p
-                    right_rotate(T, z)
-                z.p.color = 'black'
-                z.p.p.color = 'red'
-                left_rotate(T, z.p.p)
-    T.root.color = 'black'
-    
-def left_rotate(T, x):
-    y = x.right
-    x.right = y.left
-    if y.left != T.nil:
-        y.left.p = x
-    y.p = x.p
-    if x.p == T.nil:
-        T.root = y
-    elif x == x.p.left:
-        x.p.left = y
-    else:
-        x.p.right = y
-    y.left = x
-    x.p = y
-    
-def right_rotate(T, x):
-    y = x.left
-    x.left = y.right
-    if y.right != T.nil:
-        y.right.p = x
-    y.p = x.p
-    if x.p == T.nil:
-        T.root = y
-    elif x == x.p.right:
-        x.p.right = y
-    else:
-        x.p.left = y
-    y.right = x
-    x.p = y
-    
-    
+                self.right = self.right.insert(key)
+        else:
+            self.key = key
+
+        if self.right is not None and self.right.is_red() and not self.left.is_red():
+            self = self.rotate_left()
+        if (
+            self.left is not None
+            and self.left.is_red()
+            and self.left.left is not None
+            and self.left.left.is_red()
+        ):
+            self = self.rotate_right()
+        if (
+            self.left is not None
+            and self.left.is_red()
+            and self.right is not None
+            and self.right.is_red()
+        ):
+            self.flip_colors()
+
+        self.size = 1 + self.left_size() + self.right_size()
+        return self
+
+    def search(self, key):
+        if key < self.key:
+            if self.left is None:
+                return None
+            else:
+                return self.left.search(key)
+        elif key > self.key:
+            if self.right is None:
+                return None
+            else:
+                return self.right.search(key)
+        else:
+            return self
+
+    def delete(self, key):
+        if key < self.key:
+            if self.left is not None:
+                self.left = self.left.delete(key)
+        elif key > self.key:
+            if self.right is not None:
+                self.right = self.right.delete(key)
+        else:
+            if self.right is None:
+                return self.left
+            else:
+                x = self.right.min()
+                self.key = x.key
+                self.right = self.right.delete_min()
+                self.left = x.left
+        self.size = 1 + self.left_size() + self.right_size()
+        return self
+
+    def min(self):
+        if self.left is None:
+            return self
+        else:
+            return self.left.min()
+
+    def delete_min(self):
+        if self.left is None:
+            return self.right
+        else:
+            self.left = self.left.delete_min()
+            self.size = 1 + self.left_size() + self.right_size()
+
+
+class RedBlackTree:
+    def __init__(self):
+        self.root = None
+
+    def insert(self, key):
+        if self.root is None:
+            self.root = Node(key)
+        else:
+            self.root = self.root.insert(key)
+        self.root.color = BLACK
+
+    def search(self, key):
+        if self.root is None:
+            return None
+        else:
+            return self.root.search(key)
+
+    def delete(self, key):
+        if self.root is not None:
+            self.root = self.root.delete(key)
+            if self.root is not None:
+                self.root.color = BLACK
+
+    def min(self):
+        if self.root is None:
+            return None
+        else:
+            return self.root.min()
+
+    def delete_min(self):
+        if self.root is not None:
+            self.root = self.root.delete_min()
+            if self.root is not None:
+                self.root.color = BLACK
+
+    def left_size(self):
+        if self.root is None:
+            return 0
+        else:
+            return self.root.left_size()
+
+    def right_size(self):
+        if self.root is None:
+            return 0
+        else:
+            return self.root.right_size()
+
+    def is_empty(self):
+        return self.root is None
+
+    def size(self):
+        if self.root is None:
+            return 0
+        else:
+            return self.root.size
+
+    def is_red(self):
+        return self.root is not None and self.root.is_red()
+
+    def rotate_left(self):
+        if self.root is None:
+            return
+        x = self.root.right
+        self.root.right = x.left
+        x.left = self.root
+        x.color = x.left.color
+        x.left.color = RED
+        x.size = self.root.size
+        self.root.size = 1 + self.root.left_size() + self.root.right_size()
+        return x
+
+    def rotate_right(self):
+        if self.root is None:
+            return
+        x = self.root.left
+        self.root.left = x.right
+        x.right = self.root
+        x.color = x.right.color
+        x.right.color = RED
+        x.size = self.root.size
+        self.root.size = 1 + self.root.left_size() + self.root.right_size()
+        return x
+
+    def flip_colors(self):
+        if self.root is None:
+            return
+        self.root.color = not self.root.color
+        self.root.left.color = not self.root.left.color
+        self.root.right.color = not self.root.right.color

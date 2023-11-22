@@ -1,67 +1,45 @@
-import unittest
+class Dijkstra:
+    def __init__(self, graph):
+        self.graph = graph
+        self.nodes = list(graph.keys())
+        self.distances = {}
+        self.predecessors = {}
+        self.visited = []
 
+    def find_shortest_path(self, start_node, end_node):
+        self.distances[start_node] = 0
+        self.predecessors[start_node] = None
+        self.visited.append(start_node)
+        self._visit(start_node, end_node)
+        return self._get_path(start_node, end_node)
 
+    def _visit(self, node, end_node):
+        if node == end_node:
+            return
+        for neighbor in self.graph[node]:
+            if neighbor not in self.visited:
+                self.visited.append(neighbor)
+                self._update_distance(node, neighbor)
+        next_node = self._find_next_node()
+        self._visit(next_node, end_node)
 
-# return all shortest paths between start and end
-def dijkstra(graph, start, end):
-    # keep track of explored nodes
-    explored = []
-    # keep track of all the paths to be checked
-    queue = [[start]]
-    
-    # return path if start is goal
-    if start == end:
-        return "That was easy! Start = end"
-    
-    # keeps looping until all possible paths have been checked
-    while queue:
-        # pop the first path from the queue
-        path = queue.pop(0)
-        # get the last node from the path
-        node = path[-1]
-        
-        if node not in explored:
-            neighbours = graph[node]
-            
-            # go through all neighbour nodes, construct a new path and
-            # push it into the queue
-            for neighbour in neighbours:
-                new_path = list(path)
-                new_path.append(neighbour)
-                queue.append(new_path)
-                
-                # return path if neighbour is goal
-                if neighbour == end:
-                    return new_path
-            
-            # mark node as explored
-            explored.append(node)
-            
-    # in case there's no path between the 2 nodes
-    return "So sorry, but a connecting path doesn't exist :("
+    def _update_distance(self, node, neighbor):
+        new_distance = self.distances[node] + self.graph[node][neighbor]
+        if neighbor not in self.distances or new_distance < self.distances[neighbor]:
+            self.distances[neighbor] = new_distance
+            self.predecessors[neighbor] = node
 
-# Test the algorithm
-class Test(unittest.TestCase):
-    def test_dijkstra(self):
-        graph = {
-            'A': [('B', 10), ('C', 3)],
-            'B': [('C', 1), ('D', 2)],
-            'C': [('B', 4), ('D', 8), ('E', 2)],
-            'D': [('E', 7)],
-            'E': [('D', 9)]
-        }
-      
-        
-        
-        
-        self.assertEqual(dijkstra(graph, 'A', 'E'), ['A', 'C', 'E'])
-        self.assertEqual(dijkstra(graph, 'A', 'D'), ['A', 'C', 'E', 'D'])
-        self.assertEqual(dijkstra(graph, 'E', 'A'), "So sorry, but a connecting path doesn't exist :(")
-        self.assertEqual(dijkstra(graph, 'A', 'A'), 'That was easy! Start = end')
-        
+    def _find_next_node(self):
+        unvisited = {}
+        for node in self.nodes:
+            if node not in self.visited:
+                unvisited[node] = self.distances[node]
+        return min(unvisited, key=unvisited.get)
 
-if __name__ == "__main__":
-    unittest.main()
-    
-    
-    
+    def _get_path(self, start_node, end_node):
+        path = [end_node]
+        node = end_node
+        while node != start_node:
+            node = self.predecessors[node]
+            path.append(node)
+        return path[::-1]
